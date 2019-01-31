@@ -1,3 +1,3 @@
-export * from './eventhandler';
-export * from './requesthandler';
+export * from './domainhandler';
+export * from './fetchhandler';
 export * from './responses';

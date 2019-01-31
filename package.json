@@ -5,7 +5,5 @@
     "main": "src/index.js",
     "author": "cakedan",
     "license": "MIT",
-    "dependencies": {
-        "path-to-regexp": "3.0.0"
-    }
+    "dependencies": {}
 }

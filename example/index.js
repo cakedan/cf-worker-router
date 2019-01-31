@@ -1,9 +1,4 @@
-# Cloudflare Worker Router
-easier cloudflare request routing
-
-## Example Usage
-```js
-import { ApiRedirect, DomainHandler, FetchHandler } from './src';
+import { ApiRedirect, DomainHandler, FetchHandler } from '../src';
 
 
 // match all domains
@@ -35,4 +30,3 @@ handler.addDomain(subDomain);
 addEventListener('fetch', (event) => {
   handler.onFetch(event);
 });
-```
