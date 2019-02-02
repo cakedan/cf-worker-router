@@ -1,6 +1,6 @@
 {
     "name": "cf-worker-router",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "",
     "main": "src/index.js",
     "author": "cakedan",

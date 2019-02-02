@@ -1,32 +1,42 @@
-import { ApiRedirect, DomainHandler, FetchHandler } from '../src';
+import { ApiError, ApiRedirect, DomainRouter, FetchRouter } from '../src';
 
+const router = new FetchRouter();
 
-// match all domains
-const main = new DomainHandler();
-
-// example.com/users/1234
-// same as addRoute(route, 'GET || ['GET'], function)
-main.get('/users/:userId', async ({parameters, query, url, request}) => {
-  return parameters;
-});
-
-// example.com/redirect/someUrlHere
-// same as addRoute(route, '*', function);
-main.addRoute('/redirect/:url', async ({parameters}) => {
-  return new ApiRedirect(parameters.url);
-});
-
-const subDomain = new DomainHandler(':username.example.com');
-
-// some-username.example.com/files/1234
-subDomain.get('/files/:fileId', async ({parameters}) => {
-  //parameters will now be {username, fileId}
-  return parameters;
-});
-
-const handler = new FetchHandler();
-handler.addDomain(main);
-handler.addDomain(subDomain);
 addEventListener('fetch', (event) => {
-  handler.onFetch(event);
+  router.onFetch(event);
 });
+
+// same as .route(url, 'GET', handler);
+// GET *example.com/users/1234
+router.route('/users/:userId', async(event) => {
+  // automatically converts anything not of Response type to ApiResponse
+  return event.parameters;
+});
+
+// same as .route(url, ['GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'OPTIONS'], handler)
+// ANY-METHOD *example.com/proxy/:url
+router.route('/proxy/:url', '*', async(event) => {
+  if (event.request.headers.get('secret-token') !== 'test') {
+    return new ApiError({status: 403});
+  }
+  // remove our ip from headers
+  event.request.headers.delete('cf-connecting-ip');
+  event.request.headers.delete('x-real-ip');
+  return await fetch(event.parameters.url, event.request);
+});
+
+// GET redirect.example.com/:url
+router.route('redirect.example.com/:url', async(event) => {
+  return new ApiRedirect(event.parameters.url);
+});
+
+
+const subDomain = new DomainRouter(':username.example.com');
+
+// GET some-username.example.com/files/1234
+subDomain.get('/files/:fileId', async(event) => {
+  // {username, fileId} are the parameters
+  return event.parameters;
+});
+
+router.addRouter(subDomain);

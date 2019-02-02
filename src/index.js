@@ -1,3 +1,2 @@
-export * from './domainhandler';
-export * from './fetchhandler';
 export * from './responses';
+export * from './routers';
