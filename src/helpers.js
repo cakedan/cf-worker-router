@@ -21,20 +21,32 @@ function checkHttpMethods(methods) {
 const RouteRegexps = {
   PARAMETER: /(?:[:*])(\w+)/g,
   PARAMETER_REPLACEMENT: '([^\/]+)',
+  PARAMETER_WILDCARD_DOTS: /(?:\(\.\*\))(\.{3})/g,
+  PARAMETER_WILDCARD_REPLACEMENT: '(.*)',
   SLASH_OPTIONAL: '(?:\/$|$)',
   WILDCARD: /\*/g,
   WILDCARD_REPLACEMENT: '(?:.*)',
 };
 function urlToRegexp(url) {
   if (url.startsWith('/')) {
-    url = '*' + url;
+    url = '^*' + url;
+  }
+  if (!url.startsWith('^')) {
+    url = '^' + url;
   }
   const variables = [];
   const regexp = new RegExp(
-    url.replace(RouteRegexps.PARAMETER, (match, variable) => {
-      variables.push(variable);
-      return RouteRegexps.PARAMETER_REPLACEMENT;
-    }).replace(RouteRegexps.WILDCARD, RouteRegexps.WILDCARD_REPLACEMENT) + RouteRegexps.SLASH_OPTIONAL
+    url
+      .replace(RouteRegexps.WILDCARD, RouteRegexps.WILDCARD_REPLACEMENT)
+      .replace(RouteRegexps.PARAMETER, (match, variable, index) => {
+        variables.push(variable);
+        const indexAfter = match.length + index;
+        if (url.slice(indexAfter, indexAfter + 3) === '...') {
+          return RouteRegexps.PARAMETER_WILDCARD_REPLACEMENT;
+        } else {
+          return RouteRegexps.PARAMETER_REPLACEMENT;
+        }
+      }).replace(RouteRegexps.PARAMETER_WILDCARD_DOTS, RouteRegexps.PARAMETER_WILDCARD_REPLACEMENT) + RouteRegexps.SLASH_OPTIONAL
   );
   return {regexp, variables};
 };
@@ -180,5 +192,9 @@ export class RouterEvent {
 
   get query() {
     return this.url.searchParams;
+  }
+
+  pass() {
+    return fetch(this.fetchEvent.request);
   }
 }

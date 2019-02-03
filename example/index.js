@@ -7,14 +7,14 @@ addEventListener('fetch', (event) => {
 });
 
 // same as .route(url, 'GET', handler);
-// GET *example.com/users/1234
+// GET */users/1234
 router.route('/users/:userId', async(event) => {
   // automatically converts anything not of Response type to ApiResponse
   return event.parameters;
 });
 
 // same as .route(url, ['GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'OPTIONS'], handler)
-// ANY-METHOD *example.com/proxy/:url
+// ANY-METHOD */proxy/:url
 router.route('/proxy/:url', '*', async(event) => {
   if (event.request.headers.get('secret-token') !== 'test') {
     return new ApiError({status: 403});
@@ -28,6 +28,12 @@ router.route('/proxy/:url', '*', async(event) => {
 // GET redirect.example.com/:url
 router.route('redirect.example.com/:url', async(event) => {
   return new ApiRedirect(event.parameters.url);
+});
+
+// GET example.com/string-test/anystringhere
+// GET example.com/string-test/anystringhere/andanythingwithslashes
+router.route('example.com/string-test/:string...', async(event) => {
+  return event.parameters;
 });
 
 

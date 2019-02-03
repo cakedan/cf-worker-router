@@ -35,6 +35,11 @@ router.route('redirect.example.com/:url', async(event) => {
   return new ApiRedirect(event.parameters.url);
 });
 
+// GET example.com/string-test/anystringhere
+// GET example.com/string-test/anystringhere/andanythingwithslashes
+router.route('example.com/string-test/:string...', async(event) => {
+  return event.parameters;
+});
 
 const subDomain = new DomainRouter(':username.example.com');
 

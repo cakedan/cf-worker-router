@@ -4,6 +4,9 @@ export class ApiResponse extends Response {
   constructor(body, options) {
     options = Object.assign({}, options);
     options.headers = Object.assign({}, options.headers, {'content-type': 'application/json'});
+    if (options.statusText === undefined) {
+      options.statusText = HttpStatusCodes[options.status] || null;
+    }
     super(JSON.stringify(body), options);
   }
 }
