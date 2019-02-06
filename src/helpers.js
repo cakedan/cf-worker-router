@@ -145,38 +145,38 @@ export class Router {
     this.routes = new RouteMap();
   }
 
-  route(url, methods, handler) {
+  route(url, methods, handler, options) {
     if (Array.isArray(url)) {
       for (let x of url) {
-        this.routes.add(new Route(x, methods, handler));
+        this.routes.add(new Route(x, methods, handler, options));
       }
     } else {
-      this.routes.add(new Route(url, methods, handler));
+      this.routes.add(new Route(url, methods, handler, options));
     }
   }
 
-  delete(url, handler) {
-    return this.route(url, [HttpMethods.DELETE], handler);
+  delete(url, handler, options) {
+    return this.route(url, [HttpMethods.DELETE], handler, options);
   }
 
-  get(url, handler) {
-    return this.route(url, [HttpMethods.GET], handler);
+  get(url, handler, options) {
+    return this.route(url, [HttpMethods.GET], handler, options);
   }
 
-  head(url, handler) {
-    return this.route(url, [HttpMethods.HEAD], handler);
+  head(url, handler, options) {
+    return this.route(url, [HttpMethods.HEAD], handler, options);
   }
 
-  options(url, handler) {
-    return this.route(url, [HttpMethods.OPTIONS], handler);
+  options(url, handler, options) {
+    return this.route(url, [HttpMethods.OPTIONS], handler, options);
   }
 
-  post(url, handler) {
-    return this.route(url, [HttpMethods.POST], handler);
+  post(url, handler, options) {
+    return this.route(url, [HttpMethods.POST], handler, options);
   }
 
-  put(url, handler) {
-    return this.route(url, [HttpMethods.PUT], handler);
+  put(url, handler, options) {
+    return this.route(url, [HttpMethods.PUT], handler, options);
   }
 }
 
@@ -191,11 +191,11 @@ export class RouterEvent {
   }
 
   get ip() {
-    return this.event.request.headers.get('cf-connecting-ip') || this.event.request.headers.get('x-real-ip');
+    return this.fetchEvent.request.headers.get('cf-connecting-ip') || this.fetchEvent.request.headers.get('x-real-ip');
   }
 
   get ipv4() {
-    return this.event.request.headers.get('x-real-ip');
+    return this.fetchEvent.request.headers.get('x-real-ip');
   }
 
   get method() {
