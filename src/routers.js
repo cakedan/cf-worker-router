@@ -45,10 +45,16 @@ export class DomainRouter extends Router {
   }
 
   route(url, methods, handler) {
-    if (!url.startsWith('/')) {
-      throw new TypeError('DomainRouter routes need to be paths!');
+    if (Array.isArray(url)) {
+      for (let x of url) {
+        if (!x.startsWith('/')) {
+          throw new TypeError('DomainRouter routes need to be paths!');
+        }
+        super.route.call(this, this.domain + x, methods, handler);
+      }
+    } else {
+      super.route.call(this, this.domain + url, methods, handler);
     }
-    super.route.call(this, this.domain + url, methods, handler);
   }
 
   addBlueprint(blueprint) {
@@ -68,6 +74,12 @@ export class BlueprintRouter extends Router {
   }
 
   route(url, methods, handler) {
-    super.route.call(this, this.path + url, methods, handler);
+    if (Array.isArray(url)) {
+      for (let x of url) {
+        super.route.call(this, this.path + x, methods, handler);
+      }
+    } else {
+      super.route.call(this, this.path + url, methods, handler);
+    }
   }
 }

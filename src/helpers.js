@@ -61,8 +61,9 @@ function extractParameters(match, variables, holder) {
 
 
 export class Route {
-  constructor(url, methods, handler) {
+  constructor(url, methods, handler, options) {
     if (typeof(methods) === 'function') {
+      options = handler;
       handler = methods;
       methods = [HttpMethods.GET];
     } else {
@@ -71,8 +72,11 @@ export class Route {
       }
       methods = checkHttpMethods(methods);
     }
+    options = Object.assign({priority: 0}, options);
+
     this.methods = methods;
     this.handler = handler;
+    this.priority = options.priority;
 
     const {regexp, variables} = urlToRegexp(url);
 
@@ -130,7 +134,9 @@ export class RouteMap extends Map {
         routes.push(found);
       }
     }
-    return routes.flat().sort((x, y) => y.key.length - x.key.length);
+    return routes.flat()
+      .sort((x, y) => y.key.length - x.key.length)
+      .sort((x, y) => y.priority - x.priority);
   }
 }
 
@@ -140,7 +146,13 @@ export class Router {
   }
 
   route(url, methods, handler) {
-    this.routes.add(new Route(url, methods, handler));
+    if (Array.isArray(url)) {
+      for (let x of url) {
+        this.routes.add(new Route(x, methods, handler));
+      }
+    } else {
+      this.routes.add(new Route(url, methods, handler));
+    }
   }
 
   delete(url, handler) {
