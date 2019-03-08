@@ -1,5 +1,6 @@
 import { HttpStatusCodes } from './constants';
 
+
 export class ApiResponse extends Response {
   constructor(body, options) {
     options = Object.assign({}, options);
@@ -10,6 +11,7 @@ export class ApiResponse extends Response {
     super(JSON.stringify(body), options);
   }
 }
+
 
 export class ApiError extends ApiResponse {
   constructor(options) {
@@ -34,6 +36,7 @@ export class ApiError extends ApiResponse {
   }
 }
 
+
 export class ApiRedirect extends ApiResponse {
   constructor(url, options) {
     options = Object.assign({status: 302}, options);
@@ -41,6 +44,6 @@ export class ApiRedirect extends ApiResponse {
       throw new Error('Invalid Status Code, Redirects should be equal to or between 300 and 399.');
     }
     options.headers = Object.assign({}, options.headers, {location: url});
-    super(null, options);
+    super(undefined, options);
   }
 }

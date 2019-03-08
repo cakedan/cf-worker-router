@@ -66,16 +66,28 @@ export class Route {
       options = handler;
       handler = methods;
       methods = [HttpMethods.GET];
+    } else if (typeof(methods) === 'object' && !Array.isArray(methods)) {
+      options = methods;
+      methods = [HttpMethods.GET];
     } else {
-      if (typeof(handler) !== 'function') {
-        throw new TypeError('Handler has to be of function type');
+      if (typeof(handler) === 'object') {
+        options = handler;
       }
       methods = checkHttpMethods(methods);
     }
-    options = Object.assign({priority: 0}, options);
+    options = Object.assign({
+      pass: false,
+      priority: 0,
+    }, options);
+
+    if (typeof(handler) !== 'function' && !options.pass) {
+      throw new TypeError('Handler has to be of function type');
+    }
 
     this.methods = methods;
     this.handler = handler;
+
+    this.pass = options.pass;
     this.priority = options.priority;
 
     const {regexp, variables} = urlToRegexp(url);
@@ -145,68 +157,81 @@ export class Router {
     this.routes = new RouteMap();
   }
 
-  route(url, methods, handler, options) {
+  route(url, methods, handler) {
     if (Array.isArray(url)) {
       for (let x of url) {
-        this.routes.add(new Route(x, methods, handler, options));
+        this.routes.add(new Route(x, methods, handler));
       }
     } else {
-      this.routes.add(new Route(url, methods, handler, options));
+      this.routes.add(new Route(url, methods, handler));
     }
   }
 
-  delete(url, handler, options) {
-    return this.route(url, [HttpMethods.DELETE], handler, options);
+  delete(url, handler) {
+    return this.route(url, [HttpMethods.DELETE], handler);
   }
 
-  get(url, handler, options) {
-    return this.route(url, [HttpMethods.GET], handler, options);
+  get(url, handler) {
+    return this.route(url, [HttpMethods.GET], handler);
   }
 
-  head(url, handler, options) {
-    return this.route(url, [HttpMethods.HEAD], handler, options);
+  head(url, handler) {
+    return this.route(url, [HttpMethods.HEAD], handler);
   }
 
-  options(url, handler, options) {
-    return this.route(url, [HttpMethods.OPTIONS], handler, options);
+  options(url, handler) {
+    return this.route(url, [HttpMethods.OPTIONS], handler);
   }
 
-  post(url, handler, options) {
-    return this.route(url, [HttpMethods.POST], handler, options);
+  post(url, handler) {
+    return this.route(url, [HttpMethods.POST], handler);
   }
 
-  put(url, handler, options) {
-    return this.route(url, [HttpMethods.PUT], handler, options);
+  put(url, handler) {
+    return this.route(url, [HttpMethods.PUT], handler);
   }
 }
 
 export class RouterEvent {
   constructor(event) {
     this.fetchEvent = event;
-    this.request = new Request(event.request);
     this.url = new URL(event.request.url);
     this.parameters = {};
 
     this.route = this.url.hostname + (this.url.pathname).replace(/^\/+/, '/');
+
+    this._request = null;
   }
 
   get ip() {
-    return this.fetchEvent.request.headers.get('cf-connecting-ip') || this.fetchEvent.request.headers.get('x-real-ip');
+    return this.event.request.headers.get('cf-connecting-ip') || this.event.request.headers.get('x-real-ip');
   }
 
   get ipv4() {
-    return this.fetchEvent.request.headers.get('x-real-ip');
+    return this.event.request.headers.get('x-real-ip');
   }
 
   get method() {
-    return this.request.method;
+    return this.originalRequest.method;
   }
 
   get query() {
     return this.url.searchParams;
   }
 
+  get originalRequest() {
+    return this.fetchEvent.request;
+  }
+
+  get request() {
+    if (this._request) {
+      return this._request;
+    } else {
+      return this._request = new Request(this.originalRequest);
+    }
+  }
+
   pass() {
-    return fetch(this.fetchEvent.request);
+    return fetch((this._request) ? this._request : this.originalRequest);
   }
 }
