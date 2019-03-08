@@ -58,10 +58,11 @@ export const HttpStatusCodes = Object.freeze({
 });
 
 export const HttpMethods = Object.freeze({
-  GET: 'GET',
-  POST: 'POST',
-  PUT: 'PUT',
   DELETE: 'DELETE',
+  GET: 'GET',
   HEAD: 'HEAD',
   OPTIONS: 'OPTIONS',
+  PATCH: 'PATCH',
+  POST: 'POST',
+  PUT: 'PUT',
 });
