@@ -1,4 +1,4 @@
-export const HttpStatusCodes = {
+export const HttpStatusCodes = Object.freeze({
   100: 'Continue',
   101: 'Switching Protocols',
   102: 'Processing',
@@ -55,13 +55,13 @@ export const HttpStatusCodes = {
   505: 'HTTP Version Not Supported',
   507: 'Insufficient Storage',
   510: 'Not Extended',
-};
+});
 
-export const HttpMethods = {
+export const HttpMethods = Object.freeze({
   GET: 'GET',
   POST: 'POST',
   PUT: 'PUT',
   DELETE: 'DELETE',
   HEAD: 'HEAD',
   OPTIONS: 'OPTIONS',
-};
+});
