@@ -1,4 +1,14 @@
-export const HttpStatusCodes = Object.freeze({
+export const HttpMethods = Object.freeze({
+  DELETE: 'DELETE',
+  GET: 'GET',
+  HEAD: 'HEAD',
+  OPTIONS: 'OPTIONS',
+  PATCH: 'PATCH',
+  POST: 'POST',
+  PUT: 'PUT',
+});
+
+export const HttpStatusCodes: {[key: number]: string | undefined} = Object.freeze({
   100: 'Continue',
   101: 'Switching Protocols',
   102: 'Processing',
@@ -57,12 +67,12 @@ export const HttpStatusCodes = Object.freeze({
   510: 'Not Extended',
 });
 
-export const HttpMethods = Object.freeze({
-  DELETE: 'DELETE',
-  GET: 'GET',
-  HEAD: 'HEAD',
-  OPTIONS: 'OPTIONS',
-  PATCH: 'PATCH',
-  POST: 'POST',
-  PUT: 'PUT',
+export const RouteRegexps = Object.freeze({
+  PARAMETER: /(?:[:*])(\w+)/g,
+  PARAMETER_REPLACEMENT: '([^\/]+)',
+  PARAMETER_WILDCARD_DOTS: /(?:\(\.\*\))(\.{3})/g,
+  PARAMETER_WILDCARD_REPLACEMENT: '(.*)',
+  SLASH_OPTIONAL: '(?:\/$|$)',
+  WILDCARD: /\*/g,
+  WILDCARD_REPLACEMENT: '(?:.*)',
 });

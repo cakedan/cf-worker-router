@@ -1,9 +1,38 @@
 {
-    "name": "cf-worker-router",
-    "version": "0.0.8",
-    "description": "",
-    "main": "src/index.js",
-    "author": "cakedan",
-    "license": "MIT",
-    "dependencies": {}
+  "author": "cakedan",
+  "bugs": {
+    "url": "https://github.com/cakedan/cf-worker-router/issues"
+  },
+  "description": "Easier CloudFlare Worker Request Routing",
+  "files": [
+    "lib/**/*"
+  ],
+  "homepage": "https://github.com/cakedan/cf-worker-router#readme",
+  "keywords": [
+    "cloudflare",
+    "router",
+    "typescript",
+    "worker"
+  ],
+  "license": "MIT",
+  "main": "lib/index.js",
+  "name": "cf-worker-router",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cakedan/cf-worker-router"
+  },
+  "types": "lib/index.d.ts",
+  "version": "0.1.0",
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^3.6.3",
+    "types-cloudflare-worker": "^1.0.1",
+    "webpack": "^4.40.2",
+    "webpack-cli": "^3.3.9"
+  },
+  "scripts": {
+    "build": "tsc && webpack --progress --hide-modules -p",
+    "prepare": "npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
 }

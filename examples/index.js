@@ -1,4 +1,4 @@
-import { ApiError, ApiRedirect, DomainRouter, FetchRouter } from '../src';
+import { ApiError, ApiRedirect, DomainRouter, FetchRouter } from '../lib';
 
 const router = new FetchRouter();
 
@@ -21,14 +21,14 @@ router.beforeResponse = (response, event) => {
 
 // same as .route(url, 'GET', handler);
 // GET */users/1234
-router.route('/users/:userId', async(event) => {
+router.route('/users/:userId', async (event) => {
   // automatically converts anything not of Response type to ApiResponse
   return event.parameters;
 });
 
 // same as .route(url, ['GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'OPTIONS'], handler)
 // ANY-METHOD */proxy/:url
-router.route('/proxy/:url', '*', async(event) => {
+router.route('/proxy/:url', '*', async (event) => {
   if (event.request.headers.get('secret-token') !== 'test') {
     return new ApiError({status: 403});
   }
@@ -39,13 +39,13 @@ router.route('/proxy/:url', '*', async(event) => {
 });
 
 // GET redirect.example.com/:url
-router.route('redirect.example.com/:url', async(event) => {
+router.route('redirect.example.com/:url', async (event) => {
   return new ApiRedirect(event.parameters.url);
 });
 
 // GET example.com/string-test/anystringhere
 // GET example.com/string-test/anystringhere/andanythingwithslashes
-router.route('example.com/string-test/:string...', async(event) => {
+router.route('example.com/string-test/:string...', async (event) => {
   return event.parameters;
 });
 
@@ -58,7 +58,7 @@ const subDomain = new DomainRouter(':username.example.com');
 router.addRouter(subDomain);
 
 // GET some-username.example.com/files/1234
-subDomain.get('/files/:fileId', async(event) => {
+subDomain.get('/files/:fileId', async (event) => {
   // {username, fileId} are the parameters
   return event.parameters;
 });

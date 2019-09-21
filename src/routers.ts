@@ -1,22 +1,28 @@
-import { ApiError, ApiResponse } from './responses';
-import { Router, RouterEvent } from './helpers';
+import { ApiError, ApiErrorInit, ApiResponse } from './responses';
+import { Router, RouteHandler, RouteOptions, Route, RouterEvent } from './helpers';
 
+
+export interface FetchRouterOptions {
+  showServerError?: boolean,
+}
 
 export class FetchRouter extends Router {
-  constructor(options) {
+  showServerError: boolean = true;
+
+  beforeResponse?: (response: Response, event: RouterEvent) => any;
+
+  constructor(options: FetchRouterOptions = {}) {
     super();
-    options = Object.assign({
-      showServerError: true,
-    }, options);
+    options = Object.assign({showServerError: this.showServerError}, options);
 
     this.showServerError = !!options.showServerError;
   }
 
-  addRouter(router) {
+  addRouter(router: Router) {
     this.routes.add(router);
   }
 
-  _beforeResponse(response, event) {
+  _beforeResponse(response: Response, event: RouterEvent): Response {
     if (typeof(this.beforeResponse) === 'function') {
       const newResponse = this.beforeResponse(response, event);
       if (newResponse) {
@@ -30,7 +36,7 @@ export class FetchRouter extends Router {
     return response;
   }
 
-  onFetch(fetchEvent) {
+  onFetch(fetchEvent: FetchEvent) {
     const event = new RouterEvent(fetchEvent);
 
     let routes = this.routes.findAll(event.route);
@@ -45,21 +51,21 @@ export class FetchRouter extends Router {
       return fetchEvent.respondWith(response);
     }
 
-    const route = routes.shift();
+    const route = <Route> routes.shift();
     if (!route.pass) {
       return fetchEvent.respondWith(this.onRoute(event, route));
     }
   }
 
-  async onRoute(event, route) {
-    let response;
+  async onRoute(event: RouterEvent, route: Route): Promise<Response> {
+    let response: Response;
     try {
       response = await route.handle(event);
       if (!(response instanceof Response)) {
         response = new ApiResponse(response);
       }
     } catch(error) {
-      const options = {status: 500};
+      const options: ApiErrorInit = {status: 500};
       if (this.showServerError) {
         options.metadata = {error: String(error)};
       }
@@ -69,15 +75,21 @@ export class FetchRouter extends Router {
   }
 }
 
-
 export class DomainRouter extends Router {
-  constructor(domain = '*', key) {
+  readonly domain: string;
+
+  constructor(domain: string = '*', key?: string) {
     super();
     this.domain = domain;
     this.key = key || domain;
   }
 
-  route(url, methods, handler, options) {
+  route(
+    url: Array<string> | string,
+    methods: Array<string> | string | RouteHandler,
+    handler?: RouteHandler | RouteOptions,
+    options: RouteOptions = {},
+  ): this {
     if (Array.isArray(url)) {
       for (let x of url) {
         if (!x.startsWith('/')) {
@@ -88,25 +100,33 @@ export class DomainRouter extends Router {
     } else {
       super.route.call(this, this.domain + url, methods, handler, options);
     }
+    return this;
   }
 
-  addBlueprint(blueprint) {
+  addBlueprint(blueprint: BlueprintRouter): this {
     if (!(blueprint instanceof BlueprintRouter)) {
       throw new TypeError('Blueprint must be of type BlueprintRouter');
     }
     this.routes.add(blueprint);
+    return this;
   }
 }
 
-
 export class BlueprintRouter extends Router {
-  constructor(path = '', key) {
+  readonly path: string;
+
+  constructor(path: string = '', key?: string) {
     super();
     this.path = path;
     this.key = key || path;
   }
 
-  route(url, methods, handler, options) {
+  route(
+    url: Array<string> | string,
+    methods: Array<string> | string | RouteHandler,
+    handler?: RouteHandler | RouteOptions,
+    options: RouteOptions = {},
+  ): this {
     if (Array.isArray(url)) {
       for (let x of url) {
         super.route.call(this, this.path + x, methods, handler, options);
@@ -114,5 +134,6 @@ export class BlueprintRouter extends Router {
     } else {
       super.route.call(this, this.path + url, methods, handler, options);
     }
+    return this;
   }
 }
