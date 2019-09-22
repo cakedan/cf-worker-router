@@ -1,3 +1,8 @@
+export const Package = Object.freeze({
+  URL: 'https://github.com/cakedan/cf-worker-router',
+  VERSION: '0.1.1',
+});
+
 export const HttpMethods = Object.freeze({
   DELETE: 'DELETE',
   GET: 'GET',

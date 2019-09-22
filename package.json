@@ -22,7 +22,7 @@
     "url": "git+https://github.com/cakedan/cf-worker-router"
   },
   "types": "lib/index.d.ts",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "dependencies": {},
   "devDependencies": {
     "typescript": "^3.6.3",

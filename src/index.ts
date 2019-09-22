@@ -1,12 +1,17 @@
+import * as Constants from './constants';
+import * as Helpers from './helpers';
+import * as Responses from './responses';
+import * as Routers from './routers';
+
+export { Helpers };
 export * from './constants';
+export { RouteHandler, RouteOptions } from './helpers';
 export * from './responses';
 export * from './routers';
 
 import { CloudflareWorkerGlobalScope } from 'types-cloudflare-worker';
-declare const globalThis: CloudflareWorkerGlobalScope;
+declare const self: CloudflareWorkerGlobalScope;
 
-import * as Constants from './constants';
-import * as Responses from './responses';
-import * as Routers from './routers';
-
-(<any> globalThis).CFWorkerRouter = {...Constants, ...Responses, ...Routers};
+Object.assign(self || {}, {
+  CFWorkerRouter: {...Constants, ...Responses, ...Routers, Helpers},
+});
