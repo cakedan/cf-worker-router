@@ -36,24 +36,24 @@ export class FetchRouter extends Router {
     return response;
   }
 
-  onFetch(fetchEvent: FetchEvent) {
-    const event = new RouterEvent(fetchEvent);
+  onFetch(fetchEvent: FetchEvent | Request, env?: Record<string, any>, context?: ExecutionContext) {
+    const event = new RouterEvent(fetchEvent, env, context);
 
     let routes = this.routes.findAll(event.route);
     if (!routes.length) {
       const response = this._beforeResponse(new ApiError({status: 404}), event);
-      return fetchEvent.respondWith(response);
+      return event.respondWith(response);
     }
 
     routes = routes.filter((route) => route.methods.includes(event.method));
     if (!routes.length) {
       const response = this._beforeResponse(new ApiError({status: 405}), event);
-      return fetchEvent.respondWith(response);
+      return event.respondWith(response);
     }
 
-    const route = <Route> routes.shift();
+    const route = routes.shift()!;
     if (!route.pass) {
-      return fetchEvent.respondWith(this.onRoute(event, route));
+      return event.respondWith(this.onRoute(event, route));
     }
   }
 

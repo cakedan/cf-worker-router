@@ -12,7 +12,7 @@ export class ApiResponse extends Response {
       options.statusText = HttpStatusCodes[options.status];
     }
 
-    switch ((<any> options.headers)['content-type']) {
+    switch ((options.headers as any)['content-type']) {
       case 'application/json': {
         body = JSON.stringify(body);
       }; break;
@@ -32,7 +32,7 @@ export class ApiError extends ApiResponse {
   constructor(options: ApiErrorInit = {}) {
     options = Object.assign({status: 400, code: 0}, options);
 
-    const status = <number> options.status;
+    const status = options.status!;
     if (status < 400 || 600 <= status) {
       throw new Error('Invalid Status Code, Errors should be equal to or between 400 and 599.');
     }
@@ -57,7 +57,7 @@ export class ApiRedirect extends ApiResponse {
   constructor(url: string, options: ResponseInit = {}) {
     options = Object.assign({status: 302}, options);
 
-    const status = <number> options.status;
+    const status = options.status!;
     if (status < 300 || 400 <= status) {
       throw new Error('Invalid Status Code, Redirects should be equal to or between 300 and 399.');
     }

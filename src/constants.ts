@@ -1,6 +1,6 @@
 export const Package = Object.freeze({
   URL: 'https://github.com/cakedan/cf-worker-router',
-  VERSION: '0.1.1',
+  VERSION: '0.2.0',
 });
 
 export const HttpMethods = Object.freeze({

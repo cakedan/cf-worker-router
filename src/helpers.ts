@@ -1,6 +1,7 @@
 import { HttpMethods, RouteRegexps } from './constants';
 
 
+
 export function checkHttpMethods(methods: Array<string> | string): Array<string> {
   if (typeof(methods) === 'string') {
     if (methods === '*') {
@@ -11,7 +12,7 @@ export function checkHttpMethods(methods: Array<string> | string): Array<string>
   } else if (!Array.isArray(methods)) {
     throw new TypeError('Methods must be a string or a list of strings');
   }
-  methods = (<Array<string>> methods).map((method) => method.toUpperCase());
+  methods = (methods as Array<string>).map((method) => method.toUpperCase());
   methods = Array.from(new Set(methods)).filter((method) => method in HttpMethods);
 
   if (!methods.length) {
@@ -23,7 +24,7 @@ export function checkHttpMethods(methods: Array<string> | string): Array<string>
 export function extractParameters(
   match: Array<string> | null,
   variables: Array<string>,
-  holder: {[key: string]: string} = {},
+  holder: Record<string, string> = {},
 ): {[key: string]: string} | null {
   if (match && (match.length - 1) === variables.length) {
     return match.slice(1).reduce((parameters, value, i) => {
@@ -82,31 +83,29 @@ export class Route {
     options: RouteOptions = {},
   ) {
     if (typeof(methods) === 'function') {
-      options = <RouteOptions> handler;
-      handler = <RouteHandler> methods;
+      options = handler as RouteOptions;
+      handler = methods as RouteHandler;
       methods = [HttpMethods.GET];
     } else if (typeof(methods) === 'object' && !Array.isArray(methods)) {
-      options = <RouteOptions> methods;
+      options = methods as RouteOptions;
       methods = [HttpMethods.GET];
     } else {
       if (typeof(handler) === 'object') {
-        options = <RouteOptions> handler;
+        options = handler as RouteOptions;
       }
       methods = checkHttpMethods(methods);
     }
-    handler = <RouteHandler | undefined> handler;
-    methods = <Array<string>> methods;
-    options = <RouteOptions> Object.assign({
+    options = Object.assign({
       pass: this.pass,
       priority: this.priority,
-    }, options);
+    }, options) as RouteOptions;
 
     if (typeof(handler) !== 'function' && !options.pass) {
       throw new TypeError('Handler has to be of function type or options must have pass as true');
     }
 
-    this.handler = handler;
-    this.methods = methods;
+    this.handler = handler as RouteHandler;
+    this.methods = methods as Array<string>;
     this.pass = options.pass || this.pass;
     this.priority = options.priority || this.priority;
 
@@ -246,23 +245,38 @@ export class Router {
 }
 
 
+
 export class RouterEvent {
-  readonly fetchEvent: FetchEvent;
+  readonly fetchEvent: FetchEvent | null = null;
   readonly route: string;
   readonly url: URL;
 
+  _originalRequest: null | Request = null;
   _request: null | Request = null;
+  context: null | ExecutionContext = null;
+  environment: Record<string, any> = {};
   parameters: {[key: string]: any} = {};
 
-  constructor(event: FetchEvent) {
-    this.fetchEvent = event;
-    this.url = new URL(event.request.url);
+  constructor(event: FetchEvent | Request, env?: Record<string, any>, context?: ExecutionContext) {
+    if (event instanceof Request) {
+      this._originalRequest = event as Request;
+    } else if (event instanceof FetchEvent) {
+      this.fetchEvent = event as FetchEvent;
+    }
 
+    if (env) {
+      this.environment = env;
+    }
+    if (context) {
+      this.context = context;
+    }
+
+    this.url = new URL(this.originalRequest.url);
     this.route = this.url.hostname + (this.url.pathname).replace(/^\/+/, '/');
   }
 
   get headers(): Headers {
-    return this.fetchEvent.request.headers;
+    return this.originalRequest.headers;
   }
 
   get ip(): string {
@@ -274,11 +288,17 @@ export class RouterEvent {
   }
 
   get method(): string {
-    return this.fetchEvent.request.method;
+    return this.originalRequest.method;
   }
 
   get originalRequest(): Request {
-    return this.fetchEvent.request;
+    if (this.fetchEvent) {
+      return this.fetchEvent.request;
+    }
+    if (this._originalRequest) {
+      return this._originalRequest;
+    }
+    throw new Error('Invalid FetchEvent or Request was passed in.');
   }
 
   get query(): URLSearchParams {
@@ -290,6 +310,13 @@ export class RouterEvent {
       return this._request;
     }
     return this._request = new Request(this.originalRequest);
+  }
+
+  respondWith(response: any): any {
+    if (this.fetchEvent) {
+      return this.fetchEvent.respondWith(response);
+    }
+    return Promise.resolve(response);
   }
 
   pass(): Promise<Response> {

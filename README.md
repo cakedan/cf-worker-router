@@ -2,15 +2,44 @@
 easier cloudflare request routing
 
 ## Example Usage
+Two ways of adding the router
+```js
+import { FetchRouter } from 'cf-worker-router';
+
+const router = new FetchRouter();
+
+addEventListener('fetch', (event) => {
+  router.onFetch(event);
+});
+```
+
+or
+
+```ts
+import { FetchRouter } from 'cf-worker-router';
+
+const router = new FetchRouter();
+
+// this is the only way to get the environmental variables found in event.environment
+// this is also the only way to get access to R2 storage, event.environment.R2_BUCKET
+export default {
+  fetch(request: Request, env: Record<string, any>, context: ExecutionContext) {
+    return router.onFetch(request, env, context);
+  }
+}
+```
+
 ```js
 import { ApiError, ApiRedirect, DomainRouter, FetchRouter } from 'cf-worker-router';
 
 const router = new FetchRouter();
 
-// add the cloudflare event listener
-addEventListener('fetch', (event) => {
-  router.onFetch(event);
-});
+// export the cloudflare event listener
+export default {
+  fetch(request, env, context) {
+    return router.onFetch(request, env, context);
+  }
+}
 
 // after every response, modify it (like setting CORS headers)
 // is optional
@@ -81,9 +110,11 @@ const { ApiError, ApiRedirect, DomainRouter, FetchRouter } = CFWorkerRouter;
 const router = new FetchRouter();
 
 // add the cloudflare event listener
-addEventListener('fetch', (event) => {
-  router.onFetch(event);
-});
+export default {
+  fetch(request, env, context) {
+    return router.onFetch(request, env, context);
+  }
+}
 
 // after every response, modify it (like setting CORS headers)
 // is optional
